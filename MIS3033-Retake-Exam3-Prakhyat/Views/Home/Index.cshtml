@@ -1,0 +1,235 @@
+﻿<html>
+    <head>
+        <title>Page 1</title>
+    <!-- Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+
+    <!-- charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Data table -->
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
+    <!-- Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Map -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.js"></script>
+
+    <link href="https://juxinglong.github.io/mis3033_spring2023/mis3033css.css" rel="stylesheet" />
+    </head>
+
+    <body style="margin:20px;">
+
+       @* heading*@
+        <div class="alert alert-primary text-uppercase fw-bold" style="width:600px;">Patient Information System</div>
+
+        @*Navigation*@
+        <div>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/home/Index" target="_self">Patients</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/home/Charts" target="_self">Charts</a>
+                </li>
+            </ul>
+
+        </div>
+
+        @*Forms*@
+        <div class="m-bd-callout m-bd-callout-primary" style="width:500px;">
+            Patient Information
+
+            <div class="input-group" style="margin-top:10px;">
+                <label class="input-group-text">ID</label>
+                <input id="id" class="form-control" type="text" />
+            </div>
+
+            <div class="input-group">
+                <label class="input-group-text">Name</label>
+                <input id="name" class="form-control" type="text" />
+            </div>
+
+            <div class="input-group">
+                <label class="input-group-text">Age</label>
+                <input id="age" class="form-control" type="text" />
+            </div>
+
+            <div class="input-group">
+                <label class="input-group-text">Weight</label>
+                <input id="weight" class="form-control" type="text" />
+            </div>
+
+            <div class="input-group">
+                <label class="input-group-text">BMI</label>
+                <input id="BMI" class="form-control" type="text" />
+            </div>
+
+            @*Buttons*@
+            <button class="btn btn-primary btn-sm" id="add" style="margin-top:10px;">Add</button>
+            <button class="btn btn-warning btn-sm" id="edit" style="margin-top:10px;">Edit</button>
+            <button class="btn btn-danger btn-sm" id="del" style="margin-top:10px;">Delete</button>
+
+            <span id="status" class="badge"></span>
+        </div>
+
+        @*Table*@
+        <div id="tbl"></div>
+
+        @*Script*@
+        <script>
+            {
+                "use strict";
+
+                var t;
+                let grid=null;
+
+                //delete
+                let del = document.querySelector("#del");
+                del.addEventListener("click", (e) => { delO(e); });
+
+                async function delO(e) {
+                    let fd = new FormData();
+                    fd.append("id", document.querySelector("#id").value);
+                    //fd.append("name", document.querySelector("#name").value);
+                    //fd.append("age", document.querySelector("#age").value);
+                    //fd.append("weight", document.querySelector("#weight").value);
+                    //fd.append("BMI", document.querySelector("#BMI").value);
+
+                    let r = await fetch("/Home/delO", { method: "post", cache: "no-store", body: fd });
+                    let rj = await r.json();
+
+                    //t = rj;
+
+                    let status = document.querySelector("#status");
+                    status.innerHTML = "";
+                    if (rj.status == "success") {
+                        status.classList.remove("text-bg-danger");
+                        status.classList.remove("text-bg-success");
+                        status.innerHTML = rj.mes;
+
+                        loadtbl();
+                    }
+                    else {
+                        status.classList.remove("text-bg-success");
+                        status.classList.remove("text-bg-danger");
+                        status.innerHTML = rj.mes;
+                    }
+
+            }
+
+                //edit
+                let edit= document.querySelector("#edit");
+                edit.addEventListener("click",(e)=>{editO(e);});
+
+                async function editO(e) 
+                {
+                    let fd = new FormData();
+                    fd.append("id", document.querySelector("#id").value);
+                    fd.append("name", document.querySelector("#name").value);
+                    fd.append("age", document.querySelector("#age").value);
+                    fd.append("weight", document.querySelector("#weight").value);
+                    fd.append("BMI", document.querySelector("#BMI").value);
+
+                    let r = await fetch("/Home/editO", { method: "post", cache: "no-store", body: fd });
+                    let rj = await r.json();
+
+                    //t = rj;
+
+                    let status = document.querySelector("#status");
+                    status.innerHTML = "";
+                    if (rj.status == "success") {
+                        status.classList.remove("text-bg-danger");
+                        status.classList.remove("text-bg-success");
+                        status.innerHTML = rj.mes;
+
+                        loadtbl();
+                    }
+                    else {
+                        status.classList.remove("text-bg-success");
+                        status.classList.remove("text-bg-danger");
+                        status.innerHTML = rj.mes;
+                    }
+
+                }
+
+                //add
+                 let add = document.querySelector("#add");
+                 add.addEventListener("click", (e) => { addO(e); });
+
+                async function addO(e)
+                {
+                    let fd=new FormData();
+                    fd.append("ID", document.querySelector("#ID").value);
+                    fd.append("name", document.querySelector("#name").value);
+                    fd.append("age", document.querySelector("#age").value);
+                    fd.append("weight", document.querySelector("#weight").value);
+                    fd.append("BMI", document.querySelector("#BMI").value);
+
+                    let r = await fetch("/Home/addO", { method: "post", cache: "no-store", body: fd });
+                    let rj = await r.json();
+
+                    //t=rj;
+
+                    let status=document.querySelector("#status");
+                    status.innerHTML="";
+                    if(rj.status=="success")
+                    {
+                        status.classList.remove("text-bg-danger");
+                        status.classList.remove("text-bg-success");
+                        status.innerHTML=rj.mes;
+
+                        loadtbl();
+                    }
+                    else
+                    {
+                        status.classList.remove("text-bg-success");
+                        status.classList.remove("text-bg-danger");
+                        status.innerHTML = rj.mes;
+                    }
+
+                }
+
+                //grid
+                async function loadtbl()
+                {
+                    let fd = new FormData();
+
+                    let r=await fetch("/Home/getO", {method:"post", cache:"no-store", body:fd});
+                    let rj = await r.json();
+
+                    t=rj;
+
+
+                    if (grid != null) 
+                    {
+                        grid.destroy();
+                    }
+
+                    let tbl = document.querySelector("#tbl");
+
+
+                    tbl.innerHTML="";
+                    grid=new gridjs.Grid({
+                    columns: [{ id: "id", name: "ID" }, { id: "name", name: "Name" }, { id: "age", name: "Age" }, 
+                    { id: "weight", name: "Weight" }, { id: "bmi", name: "BMI" }, { id: "bmiLevel", name: "BMI Level" }],
+                    data:rj,
+                    Width:1000,
+                    search:true,
+                    sort:true,
+                    pagination:{limit:5}
+                    })
+                    grid.render(tbl);
+                }
+
+                loadtbl();
+            }
+        </script>
+
+    </body>
+</html>

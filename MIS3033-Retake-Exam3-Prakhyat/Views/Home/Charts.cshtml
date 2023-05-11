@@ -1,0 +1,141 @@
+﻿<html>
+<head>
+    <title>Page 1</title>
+    <!-- Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+
+    <!-- charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Data table -->
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
+    <!-- Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Map -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.js"></script>
+
+    <link href="https://juxinglong.github.io/mis3033_spring2023/mis3033css.css" rel="stylesheet" />
+</head>
+
+<body style="margin:20px;">
+
+    @* heading*@
+    <div class="alert alert-primary text-uppercase fw-bold" style="width:600px;">Charts</div>
+
+    @*Navigation*@
+    <div>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link " href="/home/Index" target="_self">Patients</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link active" href="/home/Charts" target="_self">Charts</a>
+            </li>
+        </ul>
+
+    </div>
+
+    <div style="display:flex;flex-direction:row;">
+
+        <div>
+            <canvas id="c1" style="width:500px;"></canvas>
+        </div>
+
+        <div>
+            <canvas id="c2" style="width:500px;"></canvas>
+        </div>
+
+        <div>
+            <canvas id="c3" style="width:500px;"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        {
+            "use strict";
+            
+            var t;
+
+            let chart1=null;
+            let chart2 = null;
+            let chart3 = null;
+
+            async function drawCharts()
+            {
+                let fd= new FormData();
+
+                let r = await fetch("/Home/getcd", { method: "post", cache: "no-store", body: fd });
+                let rj = await r.json();
+
+                t = rj;
+
+                let c=document.querySelector("#c1");
+                c.innerHTML="";
+                if(chart1!=null)
+                {
+                    chart1.destroy();
+                }
+                chart1 = new chart(c,{
+                    type:"pie",
+                    data:{
+                    labels:rj.map(x=>x.BMILevel),
+                    datasets:[{
+                        label:"BMI level",
+                        data:rj.map(x=>x.count),
+                    }],
+                },
+
+                });
+
+                //2
+            let c1 = document.querySelector("#c2");
+            c1.innerHTML = "";
+            if (chart2 != null) {
+                chart2.destroy();
+            }
+                chart2 = new chart(c1, {
+                    type: "bar",
+                    data: {
+                        labels: rj.map(x => x.BMILevel),
+                        datasets: [{
+                            label: "BMI level",
+                            data: rj.map(x => x.count),
+                        }],
+                    },
+
+                });
+
+                //3
+
+        let c2 = document.querySelector("#c3");
+        c2.innerHTML = "";
+        if (chart3 != null) {
+            chart3.destroy();
+        }
+                chart3 = new chart(c2, {
+                    type: "pie",
+                    data: {
+                        labels: rj.map(x => x.BMILevel),
+                        datasets: [{
+                            label: "BMI level",
+                            data: rj.map(x => x.count),
+                        }],
+                    },
+
+                });
+
+            }
+
+            drawCharts();
+        }
+    </script>
+
+</body>
+</html>
